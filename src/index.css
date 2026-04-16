@@ -60,6 +60,56 @@
     --font-heading: 'Inter', sans-serif;
     --font-body: 'DM Sans', sans-serif;
   }
+
+  .light-mode {
+    --background: 40 20% 97%;
+    --foreground: 220 14% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 14% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 14% 10%;
+
+    --primary: 40 72% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 10% 92%;
+    --secondary-foreground: 220 12% 40%;
+
+    --muted: 220 10% 92%;
+    --muted-foreground: 215 10% 45%;
+
+    --accent: 210 50% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 10% 85%;
+    --input: 220 10% 85%;
+    --ring: 40 72% 45%;
+
+    --gold: 40 72% 45%;
+    --gold-light: 40 55% 60%;
+    --gold-glow: 40 80% 52%;
+    --ether-blue: 210 50% 45%;
+    --ether-blue-light: 210 40% 55%;
+    --parchment: 40 20% 95%;
+    --parchment-dark: 40 15% 90%;
+
+    --surface: 220 10% 94%;
+    --surface-hover: 220 10% 90%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 12% 40%;
+    --sidebar-primary: 40 72% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 10% 92%;
+    --sidebar-accent-foreground: 220 12% 40%;
+    --sidebar-border: 220 10% 85%;
+    --sidebar-ring: 40 72% 45%;
+  }
 }
 
 @layer base {
@@ -106,5 +156,12 @@
   }
   .surface {
     background-color: hsl(var(--surface));
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

@@ -2,7 +2,8 @@ import { useState } from "react";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import HomeFeed from "@/components/HomeFeed";
 import BibleSanctuary from "@/components/BibleSanctuary";
-import CommunityFeed from "@/components/CommunityFeed";
+import PlansTab from "@/components/PlansTab";
+import DiscoverTab from "@/components/DiscoverTab";
 import ProfileAltar from "@/components/ProfileAltar";
 import BottomNav from "@/components/BottomNav";
 import type { Category } from "@/lib/verses";
@@ -26,8 +27,9 @@ const Index = () => {
     <div className="max-w-md mx-auto relative">
       {page === "home" && <HomeFeed category={category} streak={streak} onNavigate={setPage} />}
       {page === "bible" && <BibleSanctuary onBack={() => setPage("home")} />}
-      {page === "community" && <CommunityFeed />}
-      {page === "profile" && <ProfileAltar streak={streak} />}
+      {page === "plans" && <PlansTab />}
+      {page === "discover" && <DiscoverTab />}
+      {page === "you" && <ProfileAltar streak={streak} />}
       <BottomNav active={page} onNavigate={setPage} />
     </div>
   );

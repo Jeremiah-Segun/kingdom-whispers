@@ -55,6 +55,76 @@ export const bibleChapters = [
       "In all your ways acknowledge him, and he will make straight your paths.",
     ],
   },
+  {
+    book: "John",
+    chapter: 1,
+    verses: [
+      "In the beginning was the Word, and the Word was with God, and the Word was God.",
+      "He was with God in the beginning.",
+      "Through him all things were made; without him nothing was made that has been made.",
+      "In him was life, and that life was the light of all mankind.",
+      "The light shines in the darkness, and the darkness has not overcome it.",
+      "There was a man sent from God whose name was John.",
+      "He came as a witness to testify concerning that light, so that through him all might believe.",
+      "He himself was not the light; he came only as a witness to the light.",
+      "The true light that gives light to everyone was coming into the world.",
+      "He was in the world, and though the world was made through him, the world did not recognize him.",
+    ],
+  },
+];
+
+export const plans = [
+  {
+    id: "1",
+    title: "Finding Peace in Chaos",
+    description: "A 7-day journey through scriptures that calm the storm within.",
+    days: 7,
+    completedDays: 3,
+    participants: 2341,
+    category: "peace",
+    image: "🕊️",
+  },
+  {
+    id: "2",
+    title: "Strength for the Weary",
+    description: "Build unshakable faith through daily devotions on God's strength.",
+    days: 14,
+    completedDays: 0,
+    participants: 1892,
+    category: "strength",
+    image: "⚔️",
+  },
+  {
+    id: "3",
+    title: "Walking in Purpose",
+    description: "Discover God's unique calling for your life in 21 days.",
+    days: 21,
+    completedDays: 21,
+    participants: 4521,
+    category: "purpose",
+    image: "🧭",
+  },
+  {
+    id: "4",
+    title: "Healing Waters",
+    description: "Let scripture wash over your wounds with this 10-day healing plan.",
+    days: 10,
+    completedDays: 7,
+    participants: 3102,
+    category: "healing",
+    image: "💧",
+  },
+];
+
+export const discoverCategories = [
+  { label: "Anxiety", color: "from-blue-600 to-blue-800", icon: "🌊" },
+  { label: "Hope", color: "from-amber-500 to-orange-600", icon: "☀️" },
+  { label: "Peace", color: "from-emerald-600 to-teal-700", icon: "🕊️" },
+  { label: "Healing", color: "from-purple-600 to-violet-700", icon: "💜" },
+  { label: "Strength", color: "from-red-600 to-rose-700", icon: "🔥" },
+  { label: "Purpose", color: "from-sky-500 to-cyan-600", icon: "🧭" },
+  { label: "Gratitude", color: "from-yellow-500 to-amber-600", icon: "🙏" },
+  { label: "Love", color: "from-pink-500 to-rose-600", icon: "❤️" },
 ];
 
 export type Category = "peace" | "strength" | "purpose" | "healing";

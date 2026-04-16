@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { ChevronLeft, Share2, MessageCircle, BookOpen } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Settings } from "lucide-react";
 import { bibleChapters } from "@/lib/verses";
 
 interface BibleSanctuaryProps {
@@ -12,71 +12,93 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
   const [highlightedVerse, setHighlightedVerse] = useState<number | null>(null);
   const chapter = bibleChapters[selectedChapter];
 
+  const goNext = () => {
+    if (selectedChapter < bibleChapters.length - 1) {
+      setSelectedChapter(selectedChapter + 1);
+      setHighlightedVerse(null);
+    }
+  };
+
+  const goPrev = () => {
+    if (selectedChapter > 0) {
+      setSelectedChapter(selectedChapter - 1);
+      setHighlightedVerse(null);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-parchment pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-20 bg-parchment/90 backdrop-blur-md border-b border-border px-6 py-4 flex items-center gap-4">
+    <div className="min-h-screen bg-background pb-32">
+      {/* Top bar */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-xl px-5 py-3 flex items-center justify-between">
         <button onClick={onBack} className="text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <div className="flex-1">
-          <h2 className="font-heading text-xl text-foreground">{chapter.book} {chapter.chapter}</h2>
-        </div>
-        <BookOpen className="w-5 h-5 text-gold" />
-      </div>
-
-      {/* Book Tabs */}
-      <div className="px-6 py-3 flex gap-2">
-        {bibleChapters.map((ch, i) => (
-          <button
-            key={i}
-            onClick={() => { setSelectedChapter(i); setHighlightedVerse(null); }}
-            className={`px-4 py-2 rounded-full text-sm font-body transition-all ${
-              selectedChapter === i
-                ? "bg-primary text-primary-foreground shadow-golden"
-                : "bg-card text-muted-foreground border border-border hover:border-gold/30"
-            }`}
-          >
-            {ch.book} {ch.chapter}
+        <div className="flex items-center gap-4">
+          <button className="text-muted-foreground hover:text-foreground transition-colors">
+            <Search className="w-5 h-5" />
           </button>
-        ))}
+          <button className="text-muted-foreground hover:text-foreground transition-colors">
+            <Settings className="w-5 h-5" />
+          </button>
+          <button className="px-3 py-1 rounded-full bg-secondary text-xs font-body font-medium text-secondary-foreground">
+            ESV
+          </button>
+        </div>
       </div>
 
       {/* Verses */}
-      <div className="px-6 py-6 max-w-2xl mx-auto">
+      <div className="px-6 py-8 max-w-lg mx-auto">
+        <motion.h2
+          key={selectedChapter}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="font-heading text-2xl font-bold text-foreground mb-8"
+        >
+          {chapter.book} {chapter.chapter}
+        </motion.h2>
+
         {chapter.verses.map((verse, i) => (
-          <motion.div
+          <motion.p
             key={`${selectedChapter}-${i}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: i * 0.05 }}
+            transition={{ delay: i * 0.03 }}
             onClick={() => setHighlightedVerse(highlightedVerse === i ? null : i)}
-            className={`group cursor-pointer py-3 px-4 -mx-4 rounded-xl transition-all ${
-              highlightedVerse === i ? "bg-gold/10 shadow-golden" : "hover:bg-card"
+            className={`font-body text-[15px] leading-[2] cursor-pointer transition-colors inline ${
+              highlightedVerse === i
+                ? "bg-primary/15 text-foreground rounded px-0.5"
+                : "text-foreground/85 hover:text-foreground"
             }`}
           >
-            <p className="font-body text-base leading-[1.9] text-foreground">
-              <span className="font-heading text-sm text-gold mr-2 font-semibold">{i + 1}</span>
-              {verse}
-            </p>
-
-            {/* Action bar on highlight */}
-            {highlightedVerse === i && (
-              <motion.div
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-4 mt-3 pt-3 border-t border-gold/20"
-              >
-                <button className="flex items-center gap-1.5 text-xs text-gold font-body font-medium hover:text-gold-glow transition-colors">
-                  <MessageCircle className="w-3.5 h-3.5" /> Whisper Your Thoughts
-                </button>
-                <button className="flex items-center gap-1.5 text-xs text-ether font-body font-medium hover:text-ether-light transition-colors">
-                  <Share2 className="w-3.5 h-3.5" /> Create Verse Image
-                </button>
-              </motion.div>
-            )}
-          </motion.div>
+            <span className="text-primary/60 text-xs font-heading font-bold mr-1.5 select-none">
+              {i + 1}
+            </span>
+            {verse}{" "}
+          </motion.p>
         ))}
+      </div>
+
+      {/* Floating chapter pill */}
+      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-30">
+        <div className="flex items-center gap-1 bg-secondary/95 backdrop-blur-lg rounded-full px-2 py-1.5 shadow-card border border-border">
+          <button
+            onClick={goPrev}
+            disabled={selectedChapter === 0}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="px-3 text-sm font-heading font-semibold text-foreground">
+            {chapter.book} {chapter.chapter}
+          </span>
+          <button
+            onClick={goNext}
+            disabled={selectedChapter === bibleChapters.length - 1}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

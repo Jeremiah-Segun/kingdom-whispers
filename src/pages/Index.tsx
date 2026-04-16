@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import HomeFeed from "@/components/HomeFeed";
 import BibleSanctuary from "@/components/BibleSanctuary";
@@ -12,7 +12,12 @@ const Index = () => {
   const [onboarded, setOnboarded] = useState(false);
   const [category, setCategory] = useState<Category>("peace");
   const [page, setPage] = useState("home");
+  const [isDark, setIsDark] = useState(true);
   const streak = 7;
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("light-mode", !isDark);
+  }, [isDark]);
 
   const handleComplete = (cat: Category) => {
     setCategory(cat);
@@ -29,7 +34,7 @@ const Index = () => {
       {page === "bible" && <BibleSanctuary onBack={() => setPage("home")} />}
       {page === "plans" && <PlansTab />}
       {page === "discover" && <DiscoverTab />}
-      {page === "you" && <ProfileAltar streak={streak} />}
+      {page === "you" && <ProfileAltar streak={streak} onToggleTheme={() => setIsDark(!isDark)} isDark={isDark} />}
       <BottomNav active={page} onNavigate={setPage} />
     </div>
   );

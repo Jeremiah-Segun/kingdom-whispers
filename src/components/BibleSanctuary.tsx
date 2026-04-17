@@ -1,13 +1,21 @@
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
-import { Search, ChevronLeft, ChevronRight, Settings, Volume2, VolumeX, BookOpen } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Settings, Volume2, VolumeX, BookOpen, Bookmark, MessageCircle } from "lucide-react";
 import { bibleChapters } from "@/lib/verses";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import VerseCommentDrawer from "@/components/VerseCommentDrawer";
+import BadgeUnlockModal, { type BadgeInfo } from "@/components/BadgeUnlockModal";
+import { awardBadge } from "@/lib/badges";
 
 interface BibleSanctuaryProps {
   onBack: () => void;
 }
 
 const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedChapter, setSelectedChapter] = useState(0);
   const [highlightedVerse, setHighlightedVerse] = useState<number | null>(null);
   const [ambientOn, setAmbientOn] = useState(false);
@@ -16,104 +24,142 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [readingTime, setReadingTime] = useState(0);
-  const [showBadge, setShowBadge] = useState(false);
+  const [unlocked, setUnlocked] = useState<BadgeInfo | null>(null);
+  const [bookmarkedRefs, setBookmarkedRefs] = useState<Set<string>>(new Set());
+  const [commentDrawer, setCommentDrawer] = useState<{ ref: string; text: string; verse: number } | null>(null);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressedRef = useRef(false);
   const chapter = bibleChapters[selectedChapter];
+
+  // Load existing bookmarks for this chapter
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("bookmarks")
+        .select("reference")
+        .eq("user_id", user.id);
+      setBookmarkedRefs(new Set((data ?? []).map((b: any) => b.reference)));
+    })();
+  }, [user]);
+
+  // Log reading day on mount + check streak badges
+  useEffect(() => {
+    if (!user) return;
+    const today = new Date().toISOString().slice(0, 10);
+    (async () => {
+      await supabase.from("reading_days").insert({ user_id: user.id, read_date: today }).then(() => {});
+      // Check streak badge
+      const { data: streakRow } = await supabase
+        .from("user_streaks").select("current_streak").eq("user_id", user.id).maybeSingle();
+      const s = streakRow?.current_streak ?? 0;
+      const key = s >= 100 ? "streak_100" : s >= 30 ? "streak_30" : s >= 7 ? "streak_7" : null;
+      if (key) {
+        const awarded = await awardBadge(user.id, key);
+        if (awarded) setUnlocked(awarded);
+      }
+    })();
+  }, [user]);
 
   // Reading timer for Deep Seeker badge
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setReadingTime((prev) => {
         const next = prev + 1;
-        if (next === 300 && !showBadge) setShowBadge(true); // 5 min = 300s
+        if (next === 300 && user) {
+          awardBadge(user.id, "deep_seeker").then((b) => { if (b) setUnlocked(b); });
+        }
         return next;
       });
     }, 1000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [showBadge]);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [user]);
 
-  // Ambient audio
-  useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio();
-      // Use a gentle brown noise / ambient tone data URI (silent fallback)
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.3;
-    }
-  }, []);
+  // Ambient audio (Web Audio API)
+  const ctxRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
 
   const toggleAmbient = () => {
-    if (!audioRef.current) return;
     if (ambientOn) {
-      audioRef.current.pause();
-    } else {
-      // Create ambient sound using Web Audio API
-      try {
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const bufferSize = 2 * ctx.sampleRate;
-        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const output = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          output[i] = (Math.random() * 2 - 1) * 0.015; // Very quiet white noise
-        }
-        const whiteNoise = ctx.createBufferSource();
-        whiteNoise.buffer = noiseBuffer;
-        whiteNoise.loop = true;
-
-        // Low-pass filter for warm ambient feel
-        const filter = ctx.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.value = 200;
-
-        const gain = ctx.createGain();
-        gain.gain.value = 0.4;
-
-        whiteNoise.connect(filter);
-        filter.connect(gain);
-        gain.connect(ctx.destination);
-        whiteNoise.start();
-
-        // Store for cleanup
-        (audioRef.current as any)._ctx = ctx;
-        (audioRef.current as any)._source = whiteNoise;
-      } catch {
-        // Fallback: silent
-      }
+      try { sourceRef.current?.stop(); ctxRef.current?.close(); } catch {}
+      ctxRef.current = null; sourceRef.current = null;
+      setAmbientOn(false);
+      return;
     }
-    if (ambientOn && (audioRef.current as any)?._ctx) {
-      try {
-        (audioRef.current as any)._source?.stop();
-        (audioRef.current as any)._ctx?.close();
-      } catch {}
-    }
-    setAmbientOn(!ambientOn);
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const bufferSize = 2 * ctx.sampleRate;
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) output[i] = (Math.random() * 2 - 1) * 0.015;
+      const noise = ctx.createBufferSource();
+      noise.buffer = noiseBuffer; noise.loop = true;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass"; filter.frequency.value = 200;
+      const gain = ctx.createGain(); gain.gain.value = 0.4;
+      noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      noise.start();
+      ctxRef.current = ctx; sourceRef.current = noise;
+      setAmbientOn(true);
+    } catch {}
   };
 
   const goNext = () => {
     if (selectedChapter < bibleChapters.length - 1) {
       setSelectedChapter(selectedChapter + 1);
-      setHighlightedVerse(null);
-      setSearchQuery("");
+      setHighlightedVerse(null); setSearchQuery("");
     }
   };
-
   const goPrev = () => {
     if (selectedChapter > 0) {
       setSelectedChapter(selectedChapter - 1);
-      setHighlightedVerse(null);
-      setSearchQuery("");
+      setHighlightedVerse(null); setSearchQuery("");
     }
   };
 
+  const refOf = (verseIdx: number) => `${chapter.book} ${chapter.chapter}:${verseIdx + 1}`;
+
+  const toggleBookmark = async (verseIdx: number) => {
+    if (!user) return;
+    const reference = refOf(verseIdx);
+    const text = chapter.verses[verseIdx];
+    const isBookmarked = bookmarkedRefs.has(reference);
+    if (isBookmarked) {
+      setBookmarkedRefs((s) => { const n = new Set(s); n.delete(reference); return n; });
+      await supabase.from("bookmarks").delete().eq("user_id", user.id).eq("reference", reference);
+      toast({ title: "Bookmark removed" });
+    } else {
+      setBookmarkedRefs((s) => new Set(s).add(reference));
+      await supabase.from("bookmarks").insert({
+        user_id: user.id, reference, verse_text: text,
+        book: chapter.book, chapter: chapter.chapter, verse: verseIdx + 1,
+      });
+      toast({ title: "Verse saved", description: reference });
+    }
+  };
+
+  const startLongPress = (verseIdx: number) => {
+    longPressedRef.current = false;
+    longPressRef.current = setTimeout(() => {
+      longPressedRef.current = true;
+      setCommentDrawer({ ref: refOf(verseIdx), text: chapter.verses[verseIdx], verse: verseIdx + 1 });
+    }, 500);
+  };
+  const cancelLongPress = () => {
+    if (longPressRef.current) { clearTimeout(longPressRef.current); longPressRef.current = null; }
+  };
+  const handleVerseClick = (verseIdx: number) => {
+    if (longPressedRef.current) { longPressedRef.current = false; return; }
+    setHighlightedVerse(highlightedVerse === verseIdx ? null : verseIdx);
+    toggleBookmark(verseIdx);
+  };
+
   const filteredVerses = chapter.verses.map((verse, i) => ({
-    text: verse,
-    index: i,
-    matches: searchQuery
-      ? verse.toLowerCase().includes(searchQuery.toLowerCase())
-      : true,
+    text: verse, index: i,
+    matches: searchQuery ? verse.toLowerCase().includes(searchQuery.toLowerCase()) : true,
   }));
 
   return (
@@ -124,48 +170,29 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-3">
-          {/* Ambient toggle */}
           <button
             onClick={toggleAmbient}
-            className={`p-1.5 rounded-full transition-colors ${
-              ambientOn ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
-            }`}
+            className={`p-1.5 rounded-full transition-colors ${ambientOn ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}`}
             title={ambientOn ? "Disable ambient whispers" : "Enable ambient whispers"}
           >
             {ambientOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
           </button>
-          <button
-            onClick={() => setSearchOpen(!searchOpen)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <button onClick={() => setSearchOpen(!searchOpen)} className="text-muted-foreground hover:text-foreground">
             <Search className="w-5 h-5" />
           </button>
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <button onClick={() => setShowSettings(!showSettings)} className="text-muted-foreground hover:text-foreground">
             <Settings className="w-5 h-5" />
           </button>
-          <button className="px-3 py-1 rounded-full bg-secondary text-xs font-body font-medium text-secondary-foreground">
-            ESV
-          </button>
+          <button className="px-3 py-1 rounded-full bg-secondary text-xs font-body font-medium text-secondary-foreground">ESV</button>
         </div>
       </div>
 
-      {/* Search bar */}
       {searchOpen && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          className="px-5 pb-3"
-        >
+        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="px-5 pb-3">
           <div className="flex items-center gap-3 bg-secondary rounded-xl px-4 py-2.5">
             <Search className="w-4 h-4 text-muted-foreground shrink-0" />
             <input
-              type="text"
-              placeholder="Search in this chapter..."
-              value={searchQuery}
+              type="text" placeholder="Search in this chapter..." value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent text-sm font-body text-foreground placeholder:text-muted-foreground outline-none w-full"
               autoFocus
@@ -174,29 +201,17 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
         </motion.div>
       )}
 
-      {/* Font size settings */}
       {showSettings && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          className="px-5 pb-3"
-        >
+        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="px-5 pb-3">
           <div className="flex items-center gap-4 bg-secondary rounded-xl px-4 py-3">
             <span className="text-xs font-body text-muted-foreground">Aa</span>
-            <input
-              type="range"
-              min="12"
-              max="22"
-              value={fontSize}
-              onChange={(e) => setFontSize(Number(e.target.value))}
-              className="flex-1 accent-primary"
-            />
+            <input type="range" min="12" max="22" value={fontSize}
+              onChange={(e) => setFontSize(Number(e.target.value))} className="flex-1 accent-primary" />
             <span className="text-xs font-body text-muted-foreground">{fontSize}px</span>
           </div>
         </motion.div>
       )}
 
-      {/* Ambient indicator */}
       {ambientOn && (
         <div className="px-5 pb-2">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 w-fit">
@@ -206,65 +221,50 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
         </div>
       )}
 
-      {/* Deep Seeker badge popup */}
-      {showBadge && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-5 mb-4 p-3 rounded-xl bg-primary/15 border border-primary/20 flex items-center gap-3"
-        >
-          <BookOpen className="w-5 h-5 text-primary shrink-0" />
-          <div>
-            <p className="text-xs font-heading font-semibold text-foreground">Deep Seeker Badge Earned!</p>
-            <p className="text-[10px] text-muted-foreground font-body">You've been reading for 5+ minutes</p>
-          </div>
-          <button
-            onClick={() => setShowBadge(false)}
-            className="ml-auto text-muted-foreground hover:text-foreground text-xs"
-          >
-            ✕
-          </button>
-        </motion.div>
-      )}
+      {/* Hint */}
+      <div className="px-5 pb-1">
+        <p className="text-[10px] text-muted-foreground/70 font-body italic">Tap to save · long-press to comment</p>
+      </div>
 
       {/* Verses */}
-      <div className="px-6 py-8 max-w-lg mx-auto">
-        <motion.h2
-          key={selectedChapter}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="font-heading text-2xl font-bold text-foreground mb-8"
-        >
+      <div className="px-6 py-6 max-w-lg mx-auto">
+        <motion.h2 key={selectedChapter} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="font-heading text-2xl font-bold text-foreground mb-8">
           {chapter.book} {chapter.chapter}
         </motion.h2>
 
-        {filteredVerses.map((v) => (
-          <motion.p
-            key={`${selectedChapter}-${v.index}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: v.index * 0.03 }}
-            onClick={() => setHighlightedVerse(highlightedVerse === v.index ? null : v.index)}
-            style={{ fontSize: `${fontSize}px` }}
-            className={`font-body leading-[2] cursor-pointer transition-colors inline ${
-              highlightedVerse === v.index
-                ? "bg-primary/15 text-foreground rounded px-0.5"
-                : searchQuery && v.matches
-                  ? "bg-accent/15 text-foreground"
-                  : searchQuery && !v.matches
-                    ? "text-foreground/30"
-                    : "text-foreground/85 hover:text-foreground"
-            }`}
-          >
-            <span className="text-primary/60 text-xs font-heading font-bold mr-1.5 select-none">
-              {v.index + 1}
-            </span>
-            {v.text}{" "}
-          </motion.p>
-        ))}
+        {filteredVerses.map((v) => {
+          const reference = refOf(v.index);
+          const isBookmarked = bookmarkedRefs.has(reference);
+          return (
+            <motion.span
+              key={`${selectedChapter}-${v.index}`}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: v.index * 0.03 }}
+              onClick={() => handleVerseClick(v.index)}
+              onMouseDown={() => startLongPress(v.index)}
+              onMouseUp={cancelLongPress}
+              onMouseLeave={cancelLongPress}
+              onTouchStart={() => startLongPress(v.index)}
+              onTouchEnd={cancelLongPress}
+              onContextMenu={(e) => { e.preventDefault(); setCommentDrawer({ ref: reference, text: v.text, verse: v.index + 1 }); }}
+              style={{ fontSize: `${fontSize}px` }}
+              className={`font-body leading-[2] cursor-pointer transition-colors inline select-none ${
+                highlightedVerse === v.index || isBookmarked
+                  ? "bg-primary/15 text-foreground rounded px-0.5"
+                  : searchQuery && v.matches ? "bg-accent/15 text-foreground"
+                  : searchQuery && !v.matches ? "text-foreground/30"
+                  : "text-foreground/85 hover:text-foreground"
+              }`}
+            >
+              <span className="text-primary/60 text-xs font-heading font-bold mr-1.5 select-none">{v.index + 1}</span>
+              {isBookmarked && <Bookmark className="inline w-3 h-3 text-primary mr-1 -mt-0.5" fill="currentColor" />}
+              {v.text}{" "}
+            </motion.span>
+          );
+        })}
       </div>
 
-      {/* Reading time indicator */}
+      {/* Reading time */}
       <div className="fixed bottom-[88px] right-4 z-30">
         <div className="px-2.5 py-1 rounded-full bg-secondary/90 backdrop-blur-sm text-[10px] font-body text-muted-foreground">
           {Math.floor(readingTime / 60)}:{(readingTime % 60).toString().padStart(2, "0")}
@@ -274,25 +274,29 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
       {/* Floating chapter pill */}
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-30">
         <div className="flex items-center gap-1 bg-secondary/95 backdrop-blur-lg rounded-full px-2 py-1.5 shadow-card border border-border">
-          <button
-            onClick={goPrev}
-            disabled={selectedChapter === 0}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
-          >
+          <button onClick={goPrev} disabled={selectedChapter === 0}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="px-3 text-sm font-heading font-semibold text-foreground">
-            {chapter.book} {chapter.chapter}
-          </span>
-          <button
-            onClick={goNext}
-            disabled={selectedChapter === bibleChapters.length - 1}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
-          >
+          <span className="px-3 text-sm font-heading font-semibold text-foreground">{chapter.book} {chapter.chapter}</span>
+          <button onClick={goNext} disabled={selectedChapter === bibleChapters.length - 1}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
+
+      {/* Drawers / modals */}
+      <VerseCommentDrawer
+        open={!!commentDrawer}
+        onClose={() => setCommentDrawer(null)}
+        reference={commentDrawer?.ref ?? ""}
+        book={chapter.book}
+        chapter={chapter.chapter}
+        verse={commentDrawer?.verse ?? 1}
+        verseText={commentDrawer?.text ?? ""}
+      />
+      <BadgeUnlockModal badge={unlocked} onClose={() => setUnlocked(null)} />
     </div>
   );
 };

@@ -89,7 +89,7 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
         {/* Utilities Grid */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "Saved", value: "12", icon: <Bookmark className="w-5 h-5 text-primary" /> },
+            { label: "Saved", value: String(bookmarkCount), icon: <Bookmark className="w-5 h-5 text-primary" /> },
             { label: "Prayer", value: "8", icon: <HandHelping className="w-5 h-5 text-accent" /> },
             { label: "Giving", value: "$240", icon: <Heart className="w-5 h-5 text-gold-glow" /> },
           ].map((item, i) => (

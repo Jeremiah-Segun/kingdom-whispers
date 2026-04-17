@@ -1,11 +1,15 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Flame, BookMarked, Eye, Award, Calendar, Sun, Moon, Bookmark, HandHelping, Heart } from "lucide-react";
+import { Flame, BookMarked, Eye, Award, Calendar, Sun, Moon, Bookmark, HandHelping, Heart, LogOut } from "lucide-react";
 
 interface ProfileAltarProps {
   streak: number;
   onToggleTheme: () => void;
   isDark: boolean;
+  displayName?: string;
+  avatarUrl?: string | null;
+  bookmarkCount?: number;
+  onSignOut?: () => void;
 }
 
 const badges = [
@@ -26,7 +30,7 @@ const activityItems = [
   { type: "Plans" as const, text: "Started Walking in Purpose plan", time: "5 days ago" },
 ];
 
-const ProfileAltar = ({ streak, onToggleTheme, isDark }: ProfileAltarProps) => {
+const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer", avatarUrl, bookmarkCount = 0, onSignOut }: ProfileAltarProps) => {
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>("All");
 
   const filteredActivities = activityFilter === "All"
@@ -38,11 +42,15 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark }: ProfileAltarProps) => {
       <div className="px-6 pt-8 pb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-gold-glow flex items-center justify-center text-primary-foreground font-heading text-2xl">
-              W
-            </div>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName} className="w-16 h-16 rounded-full object-cover" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-gold-glow flex items-center justify-center text-primary-foreground font-heading text-2xl">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div>
-              <h1 className="font-heading text-2xl text-foreground">Whisperer</h1>
+              <h1 className="font-heading text-2xl text-foreground">{displayName}</h1>
               <p className="text-muted-foreground text-sm font-body">Joined April 2026</p>
               <div className="flex gap-3 mt-1">
                 <span className="text-xs font-body text-foreground">
@@ -56,14 +64,24 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark }: ProfileAltarProps) => {
               </div>
             </div>
           </div>
-          {/* Dark/Light Mode Toggle */}
-          <button
-            onClick={onToggleTheme}
-            className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-surface-hover transition-colors"
-            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onToggleTheme}
+              className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-surface-hover transition-colors"
+              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            {onSignOut && (
+              <button
+                onClick={onSignOut}
+                className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-surface-hover transition-colors"
+                title="Sign out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -71,7 +89,7 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark }: ProfileAltarProps) => {
         {/* Utilities Grid */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "Saved", value: "12", icon: <Bookmark className="w-5 h-5 text-primary" /> },
+            { label: "Saved", value: String(bookmarkCount), icon: <Bookmark className="w-5 h-5 text-primary" /> },
             { label: "Prayer", value: "8", icon: <HandHelping className="w-5 h-5 text-accent" /> },
             { label: "Giving", value: "$240", icon: <Heart className="w-5 h-5 text-gold-glow" /> },
           ].map((item, i) => (

@@ -8,6 +8,7 @@ interface HomeFeedProps {
   category: Category;
   streak: number;
   onNavigate: (page: string) => void;
+  displayName?: string;
 }
 
 const friends = [
@@ -55,7 +56,7 @@ const suggestedFriends = [
 
 type HomePane = "today" | "community";
 
-const HomeFeed = ({ category, streak, onNavigate }: HomeFeedProps) => {
+const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: HomeFeedProps) => {
   const [pane, setPane] = useState<HomePane>("today");
   const [likedVerse, setLikedVerse] = useState(false);
   const [likeCount, setLikeCount] = useState(2400);
@@ -139,7 +140,7 @@ const HomeFeed = ({ category, streak, onNavigate }: HomeFeedProps) => {
             {/* Greeting */}
             <div>
               <p className="text-muted-foreground text-xs font-body">Good Afternoon</p>
-              <h1 className="font-heading text-xl font-semibold text-foreground">Whisperer</h1>
+              <h1 className="font-heading text-xl font-semibold text-foreground">{displayName}</h1>
             </div>
 
             {/* Verse of the Day Hero */}

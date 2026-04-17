@@ -16,28 +16,137 @@ export type Database = {
     Tables: {
       bookmarks: {
         Row: {
+          book: string | null
+          chapter: number | null
           created_at: string
           id: string
           note: string | null
           reference: string
           user_id: string
+          verse: number | null
           verse_text: string
         }
         Insert: {
+          book?: string | null
+          chapter?: number | null
           created_at?: string
           id?: string
           note?: string | null
           reference: string
           user_id: string
+          verse?: number | null
           verse_text: string
         }
         Update: {
+          book?: string | null
+          chapter?: number | null
           created_at?: string
           id?: string
           note?: string | null
           reference?: string
           user_id?: string
+          verse?: number | null
           verse_text?: string
+        }
+        Relationships: []
+      }
+      comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "verse_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comment_reports: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reports_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "verse_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prayers: {
+        Row: {
+          answered_at: string | null
+          body: string | null
+          created_at: string
+          id: string
+          is_answered: boolean
+          is_public: boolean
+          subject: string
+          tags: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_answered?: boolean
+          is_public?: boolean
+          subject: string
+          tags?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_answered?: boolean
+          is_public?: boolean
+          subject?: string
+          tags?: string[]
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -74,6 +183,27 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_days: {
+        Row: {
+          created_at: string
+          id: string
+          read_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          read_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          read_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reading_progress: {
         Row: {
           book: string
@@ -100,6 +230,27 @@ export type Database = {
           last_verse?: number | null
           read_seconds?: number
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_key: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          earned_at?: string
+          id?: string
           user_id?: string
         }
         Relationships: []
@@ -131,6 +282,45 @@ export type Database = {
           longest_streak?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      verse_comments: {
+        Row: {
+          body: string
+          book: string
+          chapter: number
+          created_at: string
+          id: string
+          like_count: number
+          reference: string
+          updated_at: string
+          user_id: string
+          verse: number
+        }
+        Insert: {
+          body: string
+          book: string
+          chapter: number
+          created_at?: string
+          id?: string
+          like_count?: number
+          reference: string
+          updated_at?: string
+          user_id: string
+          verse: number
+        }
+        Update: {
+          body?: string
+          book?: string
+          chapter?: number
+          created_at?: string
+          id?: string
+          like_count?: number
+          reference?: string
+          updated_at?: string
+          user_id?: string
+          verse?: number
         }
         Relationships: []
       }

@@ -14,7 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          reference: string
+          user_id: string
+          verse_text: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          reference: string
+          user_id: string
+          verse_text: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          reference?: string
+          user_id?: string
+          verse_text?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          category: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          category?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          category?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reading_progress: {
+        Row: {
+          book: string
+          chapter: number
+          id: string
+          last_verse: number | null
+          read_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book: string
+          chapter: number
+          id?: string
+          last_verse?: number | null
+          read_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book?: string
+          chapter?: number
+          id?: string
+          last_verse?: number | null
+          read_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_active_date: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_active_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_active_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

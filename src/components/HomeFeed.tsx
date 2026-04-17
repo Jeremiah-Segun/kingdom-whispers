@@ -8,6 +8,7 @@ interface HomeFeedProps {
   category: Category;
   streak: number;
   onNavigate: (page: string) => void;
+  displayName?: string;
 }
 
 const friends = [

@@ -265,89 +265,27 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
             transition={{ duration: 0.25 }}
             className="px-5 space-y-5 mt-4"
           >
-            {/* Suggested Friends Carousel */}
-            <div>
-              <h2 className="font-heading text-sm font-semibold text-foreground mb-3">Suggested Friends</h2>
-              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                {suggestedFriends.map((f) => (
-                  <div key={f.name} className="flex flex-col items-center gap-1.5 shrink-0">
-                    <div className={`w-14 h-14 rounded-full ${f.color} flex items-center justify-center`}>
-                      <span className="text-sm font-heading font-bold text-foreground">{f.avatar}</span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground font-body">{f.name}</span>
-                    <button
-                      onClick={() => toggleFriend(f.name)}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-body font-medium transition-all ${
-                        addedFriends.has(f.name)
-                          ? "bg-primary/20 text-primary"
-                          : "bg-secondary text-secondary-foreground hover:bg-primary/10"
-                      }`}
-                    >
-                      <UserPlus className="w-3 h-3" />
-                      {addedFriends.has(f.name) ? "Added" : "Add"}
-                    </button>
-                  </div>
-                ))}
-              </div>
+            <div className="flex items-center justify-between">
+              <h2 className="font-heading text-sm font-semibold text-foreground">Friends' Highlights</h2>
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground text-[11px] font-body font-medium hover:bg-primary/10 transition-colors"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                Find friends
+              </button>
             </div>
 
-            {/* Activity Feed */}
-            <div>
-              <h2 className="font-heading text-sm font-semibold text-foreground mb-3">Activity</h2>
-              <div className="space-y-3">
-                {highlights.map((h, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 + i * 0.05 }}
-                    className="rounded-xl bg-card p-4 border border-border"
-                  >
-                    {/* Card Header */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`w-8 h-8 rounded-full ${h.avatarColor} flex items-center justify-center`}>
-                        <span className="text-xs font-heading font-bold text-foreground">{h.avatar}</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs font-body text-foreground">
-                          <span className="font-semibold">{h.name}</span>{" "}
-                          <span className="text-muted-foreground">highlighted</span>{" "}
-                          <span className="text-primary">{h.verse}</span>
-                        </p>
-                        <span className="text-[10px] text-muted-foreground">{h.time}</span>
-                      </div>
-                    </div>
-
-                    {/* Verse blockquote */}
-                    <div className="pl-4 border-l-2 border-primary/40 mb-3">
-                      <p className="text-sm text-secondary-foreground font-body italic leading-relaxed">
-                        "{h.text}"
-                      </p>
-                    </div>
-
-                    {/* Interactions */}
-                    <div className="flex items-center gap-4">
-                      <button
-                        onClick={() => toggleHighlightLike(i)}
-                        className={`flex items-center gap-1.5 transition-colors ${
-                          likedHighlights.has(i) ? "text-primary" : "text-muted-foreground hover:text-primary"
-                        }`}
-                      >
-                        <Heart className="w-3.5 h-3.5" fill={likedHighlights.has(i) ? "currentColor" : "none"} />
-                        <span className="text-[10px] font-body">{likedHighlights.has(i) ? "Liked" : "Like"}</span>
-                      </button>
-                      <button className="flex items-center gap-1.5 text-muted-foreground hover:text-accent transition-colors">
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span className="text-[10px] font-body">Comment</span>
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+            <CommunityFeedLive key={feedKey} onOpenSearch={() => setSearchOpen(true)} />
           </motion.div>
         )}
       </AnimatePresence>
+
+      <FriendSearchDrawer
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        onChange={() => setFeedKey((k) => k + 1)}
+      />
     </div>
   );
 };

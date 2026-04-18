@@ -76,6 +76,10 @@ const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = 
     );
   }
 
+  if (activeLink === "Newsletter") {
+    return <NewsletterList onBack={() => setActiveLink(null)} />;
+  }
+
   if (activeLink) {
     return (
       <div className="min-h-screen bg-background pb-24">

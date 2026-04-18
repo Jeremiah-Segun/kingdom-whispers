@@ -59,13 +59,31 @@ const suggestedFriends = [
 type HomePane = "today" | "community";
 
 const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: HomeFeedProps) => {
+  const { user } = useAuth();
   const [pane, setPane] = useState<HomePane>("today");
   const [likedVerse, setLikedVerse] = useState(false);
   const [likeCount, setLikeCount] = useState(2400);
   const [addedFriends, setAddedFriends] = useState<Set<string>>(new Set());
   const [likedHighlights, setLikedHighlights] = useState<Set<number>>(new Set());
+  const [resume, setResume] = useState<{ book: string; chapter: number; last_verse: number | null; updated_at: string } | null>(null);
 
   const verse = verses.find((v) => v.category === category) || verses[0];
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("reading_progress")
+        .select("book, chapter, last_verse, updated_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data) setResume(data);
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const toggleLike = () => {
     setLikedVerse(!likedVerse);

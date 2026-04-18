@@ -206,6 +206,9 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
               </div>
             </motion.div>
 
+            {/* Newsletter card → Discover › Newsletter */}
+            <NewsletterCard onOpen={() => onNavigate("discover", "Newsletter")} />
+
             {/* Daily Devotionals */}
             <div>
               <h2 className="font-heading text-sm font-semibold text-foreground mb-3">Daily Devotionals</h2>

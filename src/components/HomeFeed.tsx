@@ -65,9 +65,9 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
   const [pane, setPane] = useState<HomePane>("today");
   const [likedVerse, setLikedVerse] = useState(false);
   const [likeCount, setLikeCount] = useState(2400);
-  const [addedFriends, setAddedFriends] = useState<Set<string>>(new Set());
-  const [likedHighlights, setLikedHighlights] = useState<Set<number>>(new Set());
   const [resume, setResume] = useState<{ book: string; chapter: number; last_verse: number | null; updated_at: string } | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [feedKey, setFeedKey] = useState(0);
 
   const verse = verses.find((v) => v.category === category) || verses[0];
 

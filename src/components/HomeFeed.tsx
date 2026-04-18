@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { Flame, Heart, MessageCircle, Share2, Bell, BookOpen, HandHelping, UserPlus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Flame, Heart, MessageCircle, Share2, Bell, BookOpen, HandHelping, UserPlus, Play } from "lucide-react";
 import { verses, devotionals } from "@/lib/verses";
 import type { Category } from "@/lib/verses";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HomeFeedProps {
   category: Category;
@@ -57,13 +59,31 @@ const suggestedFriends = [
 type HomePane = "today" | "community";
 
 const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: HomeFeedProps) => {
+  const { user } = useAuth();
   const [pane, setPane] = useState<HomePane>("today");
   const [likedVerse, setLikedVerse] = useState(false);
   const [likeCount, setLikeCount] = useState(2400);
   const [addedFriends, setAddedFriends] = useState<Set<string>>(new Set());
   const [likedHighlights, setLikedHighlights] = useState<Set<number>>(new Set());
+  const [resume, setResume] = useState<{ book: string; chapter: number; last_verse: number | null; updated_at: string } | null>(null);
 
   const verse = verses.find((v) => v.category === category) || verses[0];
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("reading_progress")
+        .select("book, chapter, last_verse, updated_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data) setResume(data);
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const toggleLike = () => {
     setLikedVerse(!likedVerse);
@@ -142,6 +162,27 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
               <p className="text-muted-foreground text-xs font-body">Good Afternoon</p>
               <h1 className="font-heading text-xl font-semibold text-foreground">{displayName}</h1>
             </div>
+
+            {/* Continue Reading */}
+            {resume && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => onNavigate("bible")}
+                className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors text-left"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                  <Play className="w-4 h-4 text-primary" fill="currentColor" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] tracking-[0.18em] uppercase text-primary font-body font-semibold">Continue Reading</p>
+                  <p className="font-heading text-sm font-semibold text-foreground truncate">
+                    {resume.book} {resume.chapter}{resume.last_verse ? `:${resume.last_verse}` : ""}
+                  </p>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-body shrink-0">Resume</span>
+              </motion.button>
+            )}
 
             {/* Verse of the Day Hero */}
             <motion.div

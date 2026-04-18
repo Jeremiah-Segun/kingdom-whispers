@@ -11,7 +11,7 @@ import FriendSearchDrawer from "@/components/FriendSearchDrawer";
 interface HomeFeedProps {
   category: Category;
   streak: number;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, discoverLink?: string) => void;
   displayName?: string;
 }
 

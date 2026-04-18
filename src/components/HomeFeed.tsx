@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import CommunityFeedLive from "@/components/CommunityFeedLive";
 import FriendSearchDrawer from "@/components/FriendSearchDrawer";
+import NewsletterCard from "@/components/NewsletterCard";
 
 interface HomeFeedProps {
   category: Category;

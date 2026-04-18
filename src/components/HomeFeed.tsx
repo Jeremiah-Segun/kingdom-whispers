@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { Flame, Heart, MessageCircle, Share2, Bell, BookOpen, HandHelping, UserPlus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Flame, Heart, MessageCircle, Share2, Bell, BookOpen, HandHelping, UserPlus, Play } from "lucide-react";
 import { verses, devotionals } from "@/lib/verses";
 import type { Category } from "@/lib/verses";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HomeFeedProps {
   category: Category;

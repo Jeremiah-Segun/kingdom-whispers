@@ -92,24 +92,6 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
     setLikeCount(likedVerse ? likeCount - 1 : likeCount + 1);
   };
 
-  const toggleFriend = (name: string) => {
-    setAddedFriends((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
-  };
-
-  const toggleHighlightLike = (idx: number) => {
-    setLikedHighlights((prev) => {
-      const next = new Set(prev);
-      if (next.has(idx)) next.delete(idx);
-      else next.add(idx);
-      return next;
-    });
-  };
-
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}

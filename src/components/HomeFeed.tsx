@@ -163,6 +163,27 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
               <h1 className="font-heading text-xl font-semibold text-foreground">{displayName}</h1>
             </div>
 
+            {/* Continue Reading */}
+            {resume && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => onNavigate("bible")}
+                className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors text-left"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                  <Play className="w-4 h-4 text-primary" fill="currentColor" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] tracking-[0.18em] uppercase text-primary font-body font-semibold">Continue Reading</p>
+                  <p className="font-heading text-sm font-semibold text-foreground truncate">
+                    {resume.book} {resume.chapter}{resume.last_verse ? `:${resume.last_verse}` : ""}
+                  </p>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-body shrink-0">Resume</span>
+              </motion.button>
+            )}
+
             {/* Verse of the Day Hero */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}

@@ -20,6 +20,7 @@ const Index = () => {
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [profileLoading, setProfileLoading] = useState(true);
   const [page, setPage] = useState("home");
+  const [discoverLink, setDiscoverLink] = useState<string | null>(null);
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {

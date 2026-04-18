@@ -1,19 +1,32 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { Search, BookOpen, Play, Church, Handshake, ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, Mic, Play, Mail, Handshake, ArrowLeft } from "lucide-react";
 import { discoverCategories, verses } from "@/lib/verses";
+import NewsletterList from "@/components/NewsletterList";
 
 const quickLinks = [
-  { label: "Plans", icon: BookOpen },
+  { label: "Podcast", icon: Mic },
   { label: "Videos", icon: Play },
-  { label: "Churches", icon: Church },
+  { label: "Newsletter", icon: Mail },
   { label: "Partners", icon: Handshake },
 ];
 
-const DiscoverTab = () => {
+interface DiscoverTabProps {
+  initialLink?: string | null;
+  onConsumedInitialLink?: () => void;
+}
+
+const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = {}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeLink, setActiveLink] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialLink) {
+      setActiveLink(initialLink);
+      onConsumedInitialLink?.();
+    }
+  }, [initialLink, onConsumedInitialLink]);
 
   const filteredCategories = searchQuery
     ? discoverCategories.filter((c) => c.label.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -61,6 +74,10 @@ const DiscoverTab = () => {
         </div>
       </div>
     );
+  }
+
+  if (activeLink === "Newsletter") {
+    return <NewsletterList onBack={() => setActiveLink(null)} />;
   }
 
   if (activeLink) {

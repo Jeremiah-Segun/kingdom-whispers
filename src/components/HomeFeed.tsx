@@ -7,11 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import CommunityFeedLive from "@/components/CommunityFeedLive";
 import FriendSearchDrawer from "@/components/FriendSearchDrawer";
+import NewsletterCard from "@/components/NewsletterCard";
 
 interface HomeFeedProps {
   category: Category;
   streak: number;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, discoverLink?: string) => void;
   displayName?: string;
 }
 
@@ -204,6 +205,9 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
                 </button>
               </div>
             </motion.div>
+
+            {/* Newsletter card → Discover › Newsletter */}
+            <NewsletterCard onOpen={() => onNavigate("discover", "Newsletter")} />
 
             {/* Daily Devotionals */}
             <div>

@@ -20,6 +20,7 @@ const Index = () => {
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [profileLoading, setProfileLoading] = useState(true);
   const [page, setPage] = useState("home");
+  const [discoverLink, setDiscoverLink] = useState<string | null>(null);
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -88,10 +89,22 @@ const Index = () => {
 
   return (
     <div className="max-w-md mx-auto relative">
-      {page === "home" && <HomeFeed category={profile.category} streak={streak} onNavigate={setPage} displayName={displayName} />}
+      {page === "home" && (
+        <HomeFeed
+          category={profile.category}
+          streak={streak}
+          onNavigate={(p, link) => { setPage(p); if (link) setDiscoverLink(link); }}
+          displayName={displayName}
+        />
+      )}
       {page === "bible" && <BibleSanctuary onBack={() => setPage("home")} />}
       {page === "plans" && <PlansTab />}
-      {page === "discover" && <DiscoverTab />}
+      {page === "discover" && (
+        <DiscoverTab
+          initialLink={discoverLink}
+          onConsumedInitialLink={() => setDiscoverLink(null)}
+        />
+      )}
       {page === "you" && (
         <ProfileAltar
           streak={streak}

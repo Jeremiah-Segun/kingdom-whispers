@@ -240,6 +240,7 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
   const handleVerseClick = (verseIdx: number) => {
     if (longPressedRef.current) { longPressedRef.current = false; return; }
     setHighlightedVerse(highlightedVerse === verseIdx ? null : verseIdx);
+    lastVerseRef.current = verseIdx + 1;
     toggleBookmark(verseIdx);
   };
 

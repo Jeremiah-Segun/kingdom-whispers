@@ -27,24 +27,110 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
   const [unlocked, setUnlocked] = useState<BadgeInfo | null>(null);
   const [bookmarkedRefs, setBookmarkedRefs] = useState<Set<string>>(new Set());
   const [commentDrawer, setCommentDrawer] = useState<{ ref: string; text: string; verse: number } | null>(null);
+  const [progressLoaded, setProgressLoaded] = useState(false);
+  const [resumeToast, setResumeToast] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const saveRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressedRef = useRef(false);
+  const baseSecondsRef = useRef(0); // seconds already persisted for current chapter
+  const sessionStartRef = useRef(0); // readingTime value when current chapter began
+  const lastVerseRef = useRef<number>(1);
   const chapter = bibleChapters[selectedChapter];
 
-  // Load existing bookmarks for this chapter
+  // Load existing bookmarks + resume position
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase
-        .from("bookmarks")
-        .select("reference")
-        .eq("user_id", user.id);
-      setBookmarkedRefs(new Set((data ?? []).map((b: any) => b.reference)));
+      const [{ data: bms }, { data: prog }] = await Promise.all([
+        supabase.from("bookmarks").select("reference").eq("user_id", user.id),
+        supabase
+          .from("reading_progress")
+          .select("book, chapter, last_verse, read_seconds, updated_at")
+          .eq("user_id", user.id)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      setBookmarkedRefs(new Set((bms ?? []).map((b: any) => b.reference)));
+      if (prog) {
+        const idx = bibleChapters.findIndex((c) => c.book === prog.book && c.chapter === prog.chapter);
+        if (idx >= 0) {
+          setSelectedChapter(idx);
+          if (prog.last_verse) {
+            lastVerseRef.current = prog.last_verse;
+            setHighlightedVerse(prog.last_verse - 1);
+          }
+          setResumeToast(`${prog.book} ${prog.chapter}:${prog.last_verse ?? 1}`);
+        }
+      }
+      setProgressLoaded(true);
     })();
   }, [user]);
+
+  // One-time resume toast
+  useEffect(() => {
+    if (resumeToast) {
+      toast({ title: "Resumed where you left off", description: resumeToast });
+      setResumeToast(null);
+    }
+  }, [resumeToast, toast]);
+
+  // Load per-chapter accumulated read_seconds & reset session base whenever chapter changes
+  useEffect(() => {
+    if (!user || !progressLoaded) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("reading_progress")
+        .select("read_seconds, last_verse")
+        .eq("user_id", user.id)
+        .eq("book", chapter.book)
+        .eq("chapter", chapter.chapter)
+        .maybeSingle();
+      if (cancelled) return;
+      baseSecondsRef.current = data?.read_seconds ?? 0;
+      sessionStartRef.current = readingTime;
+      lastVerseRef.current = data?.last_verse ?? 1;
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChapter, user, progressLoaded]);
+
+  // Persist progress every 10s + on unmount
+  const persistProgress = async () => {
+    if (!user) return;
+    const sessionSecs = Math.max(0, readingTime - sessionStartRef.current);
+    const total = baseSecondsRef.current + sessionSecs;
+    await supabase.from("reading_progress").upsert(
+      {
+        user_id: user.id,
+        book: chapter.book,
+        chapter: chapter.chapter,
+        last_verse: lastVerseRef.current,
+        read_seconds: total,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,book,chapter" }
+    );
+  };
+
+  useEffect(() => {
+    if (!user || !progressLoaded) return;
+    saveRef.current = setInterval(() => { persistProgress(); }, 10000);
+    const onHide = () => { persistProgress(); };
+    window.addEventListener("beforeunload", onHide);
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      if (saveRef.current) clearInterval(saveRef.current);
+      window.removeEventListener("beforeunload", onHide);
+      document.removeEventListener("visibilitychange", onHide);
+      persistProgress();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, progressLoaded, selectedChapter]);
 
   // Log reading day on mount + check streak badges
   useEffect(() => {
@@ -154,6 +240,7 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
   const handleVerseClick = (verseIdx: number) => {
     if (longPressedRef.current) { longPressedRef.current = false; return; }
     setHighlightedVerse(highlightedVerse === verseIdx ? null : verseIdx);
+    lastVerseRef.current = verseIdx + 1;
     toggleBookmark(verseIdx);
   };
 

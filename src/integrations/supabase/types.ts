@@ -171,6 +171,97 @@ export type Database = {
         }
         Relationships: []
       }
+      post_comments: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          body: string
+          comment_count: number
+          created_at: string
+          id: string
+          like_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          comment_count?: number
+          created_at?: string
+          id?: string
+          like_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          comment_count?: number
+          created_at?: string
+          id?: string
+          like_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       prayers: {
         Row: {
           answered_at: string | null

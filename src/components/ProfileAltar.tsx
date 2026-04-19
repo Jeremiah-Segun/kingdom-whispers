@@ -123,15 +123,17 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
             <p className="font-heading text-lg text-foreground">{prayerCount}</p>
             <p className="text-[10px] text-muted-foreground font-body">Prayer</p>
           </button>
-          <div className="rounded-xl bg-card p-4 border border-border text-center">
-            <Heart className="w-5 h-5 text-gold-glow mx-auto mb-2" />
-            <p className="font-heading text-lg text-foreground">$240</p>
-            <p className="text-[10px] text-muted-foreground font-body">Giving</p>
-          </div>
+          <button onClick={() => setWhispersOpen(true)} className="rounded-xl bg-card p-4 border border-border text-center hover:border-primary/30 transition-colors">
+            <Sparkles className="w-5 h-5 text-gold-glow mx-auto mb-2" />
+            <p className="font-heading text-lg text-foreground">{whisperCount}</p>
+            <p className="text-[10px] text-muted-foreground font-body">Whispers</p>
+          </button>
         </div>
 
-        {/* Streaks & Milestones (real calendar) */}
-        <StreaksCalendar currentStreak={streak} />
+        {/* Streaks & Milestones (tap to open dashboard) */}
+        <button onClick={() => setStreaksOpen(true)} className="block w-full text-left">
+          <StreaksCalendar currentStreak={streak} />
+        </button>
 
         {/* Badges (real, from DB) */}
         <div>
@@ -140,8 +142,8 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
             {ALL_BADGE_KEYS.map((key, i) => {
               const earned = earnedKeys.has(key);
               const info = BADGE_CATALOG[key];
-              const target = key === "streak_7" ? 7 : key === "streak_30" ? 30 : key === "streak_100" ? 100 : 5;
-              const progress = earned ? 100 : key === "deep_seeker" ? 0 : Math.min(100, Math.round((streak / target) * 100));
+              const target = key === "streak_7" ? 7 : key === "streak_30" ? 30 : key === "streak_100" ? 100 : key === "whisper_keeper" ? 10 : 5;
+              const progress = earned ? 100 : (key === "deep_seeker" || key === "first_whisper") ? 0 : key === "whisper_keeper" ? Math.min(100, Math.round((whisperCount / 10) * 100)) : Math.min(100, Math.round((streak / target) * 100));
               return (
                 <motion.div key={key} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + i * 0.08 }} className="flex flex-col items-center gap-2 shrink-0 w-20">
                   <div className="relative">
@@ -192,6 +194,8 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
 
       <PrayerJournal open={prayerOpen} onClose={() => setPrayerOpen(false)} />
       <SavedBookmarksDrawer open={savedOpen} onClose={() => setSavedOpen(false)} onChanged={refreshBookmarks} />
+      <WhispersLibrary open={whispersOpen} onOpenChange={setWhispersOpen} />
+      <StreaksDashboard open={streaksOpen} onOpenChange={setStreaksOpen} currentStreak={streak} />
     </div>
   );
 };

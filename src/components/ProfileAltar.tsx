@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Flame, Award, Eye, Crown, Sun, Moon, Bookmark, HandHelping, Heart, LogOut } from "lucide-react";
+import { Flame, Award, Eye, Crown, Sun, Moon, Bookmark, HandHelping, Heart, LogOut, BookOpen, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import StreaksCalendar from "@/components/StreaksCalendar";
+import StreaksDashboard from "@/components/StreaksDashboard";
 import PrayerJournal from "@/components/PrayerJournal";
 import SavedBookmarksDrawer from "@/components/SavedBookmarksDrawer";
+import WhispersLibrary from "@/components/WhispersLibrary";
 import { BADGE_CATALOG } from "@/lib/badges";
 
 interface ProfileAltarProps {
@@ -23,9 +25,11 @@ const BADGE_ICONS: Record<string, JSX.Element> = {
   streak_30: <Award className="w-4 h-4" />,
   streak_100: <Crown className="w-4 h-4" />,
   deep_seeker: <Eye className="w-4 h-4" />,
+  first_whisper: <BookOpen className="w-4 h-4" />,
+  whisper_keeper: <Sparkles className="w-4 h-4" />,
 };
 
-const ALL_BADGE_KEYS = ["streak_7", "streak_30", "streak_100", "deep_seeker"] as const;
+const ALL_BADGE_KEYS = ["streak_7", "streak_30", "streak_100", "deep_seeker", "first_whisper", "whisper_keeper"] as const;
 
 const activityFilters = ["All", "Highlights", "Notes", "Plans"] as const;
 type ActivityFilter = (typeof activityFilters)[number];
@@ -35,8 +39,11 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>("All");
   const [prayerOpen, setPrayerOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
+  const [whispersOpen, setWhispersOpen] = useState(false);
+  const [streaksOpen, setStreaksOpen] = useState(false);
   const [earnedKeys, setEarnedKeys] = useState<Set<string>>(new Set());
   const [prayerCount, setPrayerCount] = useState(0);
+  const [whisperCount, setWhisperCount] = useState(0);
   const [localBookmarkCount, setLocalBookmarkCount] = useState(bookmarkCount);
 
   useEffect(() => setLocalBookmarkCount(bookmarkCount), [bookmarkCount]);
@@ -44,14 +51,16 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: badges }, { count: pCount }] = await Promise.all([
+      const [{ data: badges }, { count: pCount }, { count: wCount }] = await Promise.all([
         supabase.from("user_badges").select("badge_key").eq("user_id", user.id),
         supabase.from("prayers").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("bookmarks").select("id", { count: "exact", head: true }).eq("user_id", user.id).not("note", "is", null),
       ]);
       setEarnedKeys(new Set((badges ?? []).map((b: any) => b.badge_key)));
       setPrayerCount(pCount ?? 0);
+      setWhisperCount(wCount ?? 0);
     })();
-  }, [user, prayerOpen]);
+  }, [user, prayerOpen, whispersOpen]);
 
   const refreshBookmarks = async () => {
     if (!user) return;

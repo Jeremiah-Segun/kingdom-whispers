@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import VerseCommentDrawer from "@/components/VerseCommentDrawer";
+import VerseWhisperDrawer from "@/components/VerseWhisperDrawer";
 import BadgeUnlockModal, { type BadgeInfo } from "@/components/BadgeUnlockModal";
 import { awardBadge } from "@/lib/badges";
 
@@ -27,6 +28,7 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
   const [unlocked, setUnlocked] = useState<BadgeInfo | null>(null);
   const [bookmarkedRefs, setBookmarkedRefs] = useState<Set<string>>(new Set());
   const [commentDrawer, setCommentDrawer] = useState<{ ref: string; text: string; verse: number } | null>(null);
+  const [whisperDrawer, setWhisperDrawer] = useState<{ ref: string; text: string; verse: number } | null>(null);
   const [progressLoaded, setProgressLoaded] = useState(false);
   const [resumeToast, setResumeToast] = useState<string | null>(null);
 
@@ -231,7 +233,8 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
     longPressedRef.current = false;
     longPressRef.current = setTimeout(() => {
       longPressedRef.current = true;
-      setCommentDrawer({ ref: refOf(verseIdx), text: chapter.verses[verseIdx], verse: verseIdx + 1 });
+      // Long-press now opens the private Whisper journal.
+      setWhisperDrawer({ ref: refOf(verseIdx), text: chapter.verses[verseIdx], verse: verseIdx + 1 });
     }, 500);
   };
   const cancelLongPress = () => {
@@ -310,7 +313,9 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
 
       {/* Hint */}
       <div className="px-5 pb-1">
-        <p className="text-[10px] text-muted-foreground/70 font-body italic">Tap to save · long-press to comment</p>
+        <p className="text-[10px] text-muted-foreground/70 font-body italic">
+          Tap to highlight · long-press to add a Whisper · double-tap for public comment
+        </p>
       </div>
 
       {/* Verses */}
@@ -333,7 +338,8 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
               onMouseLeave={cancelLongPress}
               onTouchStart={() => startLongPress(v.index)}
               onTouchEnd={cancelLongPress}
-              onContextMenu={(e) => { e.preventDefault(); setCommentDrawer({ ref: reference, text: v.text, verse: v.index + 1 }); }}
+              onContextMenu={(e) => { e.preventDefault(); setWhisperDrawer({ ref: reference, text: v.text, verse: v.index + 1 }); }}
+              onDoubleClick={() => setCommentDrawer({ ref: reference, text: v.text, verse: v.index + 1 })}
               style={{ fontSize: `${fontSize}px` }}
               className={`font-body leading-[2] cursor-pointer transition-colors inline select-none ${
                 highlightedVerse === v.index || isBookmarked
@@ -382,6 +388,20 @@ const BibleSanctuary = ({ onBack }: BibleSanctuaryProps) => {
         chapter={chapter.chapter}
         verse={commentDrawer?.verse ?? 1}
         verseText={commentDrawer?.text ?? ""}
+      />
+      <VerseWhisperDrawer
+        open={!!whisperDrawer}
+        onOpenChange={(v) => !v && setWhisperDrawer(null)}
+        reference={whisperDrawer?.ref ?? ""}
+        book={chapter.book}
+        chapter={chapter.chapter}
+        verse={whisperDrawer?.verse ?? 1}
+        verseText={whisperDrawer?.text ?? ""}
+        onChanged={async () => {
+          if (!user) return;
+          const { data: bms } = await supabase.from("bookmarks").select("reference").eq("user_id", user.id);
+          setBookmarkedRefs(new Set((bms ?? []).map((b: any) => b.reference)));
+        }}
       />
       <BadgeUnlockModal badge={unlocked} onClose={() => setUnlocked(null)} />
     </div>

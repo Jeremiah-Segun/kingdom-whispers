@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import CommunityFeedLive from "@/components/CommunityFeedLive";
 import FriendSearchDrawer from "@/components/FriendSearchDrawer";
 import NewsletterCard from "@/components/NewsletterCard";
+import CommunityComposer from "@/components/CommunityComposer";
+import CommunityTimeline from "@/components/CommunityTimeline";
 
 interface HomeFeedProps {
   category: Category;
@@ -269,7 +271,14 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
             transition={{ duration: 0.25 }}
             className="px-5 space-y-5 mt-4"
           >
-            <div className="flex items-center justify-between">
+            <CommunityComposer displayName={displayName} onPosted={() => setFeedKey((k) => k + 1)} />
+
+            <div>
+              <h2 className="font-heading text-sm font-semibold text-foreground mb-3">Timeline</h2>
+              <CommunityTimeline refreshKey={feedKey} />
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
               <h2 className="font-heading text-sm font-semibold text-foreground">Friends' Highlights</h2>
               <button
                 onClick={() => setSearchOpen(true)}

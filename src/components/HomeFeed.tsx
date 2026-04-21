@@ -11,6 +11,7 @@ import NewsletterCard from "@/components/NewsletterCard";
 import CommunityComposer from "@/components/CommunityComposer";
 import CommunityTimeline from "@/components/CommunityTimeline";
 import PullToRefresh from "@/components/PullToRefresh";
+import SaveMySeatCard from "@/components/SaveMySeatCard";
 
 interface HomeFeedProps {
   category: Category;

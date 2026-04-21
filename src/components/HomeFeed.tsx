@@ -224,6 +224,9 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
               </div>
             </motion.div>
 
+            {/* Save My Seat countdown → Discover › Events */}
+            <SaveMySeatCard onOpen={() => onNavigate("discover", "Events")} />
+
             {/* Newsletter card → Discover › Newsletter */}
             <NewsletterCard onOpen={() => onNavigate("discover", "Newsletter")} />
 

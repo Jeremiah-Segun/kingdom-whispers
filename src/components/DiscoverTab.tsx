@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Search, Mic, Play, Mail, Handshake, ArrowLeft, PenSquare } from "lucide-react";
+import { Search, Mic, Play, Mail, Handshake, ArrowLeft, PenSquare, CalendarDays } from "lucide-react";
 import { discoverCategories, verses } from "@/lib/verses";
 import NewsletterList from "@/components/NewsletterList";
 import NewsletterEditor from "@/components/NewsletterEditor";
+import EventsHub from "@/components/EventsHub";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const quickLinks = [
+  { label: "Events", icon: CalendarDays },
   { label: "Podcast", icon: Mic },
   { label: "Videos", icon: Play },
   { label: "Newsletter", icon: Mail },
@@ -77,6 +79,10 @@ const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = 
         </div>
       </div>
     );
+  }
+
+  if (activeLink === "Events") {
+    return <EventsHub onBack={() => setActiveLink(null)} />;
   }
 
   if (activeLink === "Newsletter") {

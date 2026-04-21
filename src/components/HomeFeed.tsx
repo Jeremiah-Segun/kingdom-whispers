@@ -11,6 +11,7 @@ import NewsletterCard from "@/components/NewsletterCard";
 import CommunityComposer from "@/components/CommunityComposer";
 import CommunityTimeline from "@/components/CommunityTimeline";
 import PullToRefresh from "@/components/PullToRefresh";
+import SaveMySeatCard from "@/components/SaveMySeatCard";
 
 interface HomeFeedProps {
   category: Category;
@@ -222,6 +223,9 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
                 </button>
               </div>
             </motion.div>
+
+            {/* Save My Seat countdown → Discover › Events */}
+            <SaveMySeatCard onOpen={() => onNavigate("discover", "Events")} />
 
             {/* Newsletter card → Discover › Newsletter */}
             <NewsletterCard onOpen={() => onNavigate("discover", "Newsletter")} />

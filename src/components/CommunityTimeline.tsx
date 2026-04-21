@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Loader2, Flag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PostCommentsDrawer from "@/components/PostCommentsDrawer";
+import { toast } from "@/hooks/use-toast";
 
 interface PostRow {
   id: string;
@@ -170,6 +171,23 @@ const CommunityTimeline = ({ refreshKey = 0 }: { refreshKey?: number }) => {
                 <MessageCircle className="w-3.5 h-3.5" />
                 <span className="text-[11px] font-body">{p.comment_count}</span>
               </button>
+              {user && user.id !== p.user_id && (
+                <button
+                  onClick={async () => {
+                    const { error } = await supabase.from("post_reports").insert({ post_id: p.id, user_id: user.id });
+                    if (error?.code === "23505") {
+                      toast({ title: "Already reported" });
+                    } else if (error) {
+                      toast({ title: "Error", description: error.message, variant: "destructive" });
+                    } else {
+                      toast({ title: "Reported", description: "Thank you for helping keep the community safe." });
+                    }
+                  }}
+                  className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors ml-auto"
+                >
+                  <Flag className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </motion.div>
         ))}

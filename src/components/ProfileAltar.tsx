@@ -1,7 +1,12 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Flame, Award, Eye, Crown, Sun, Moon, Bookmark, HandHelping, Heart, LogOut, BookOpen, Sparkles } from "lucide-react";
+import { Flame, Award, Eye, Crown, Sun, Moon, Bookmark, HandHelping, Heart, LogOut, BookOpen, Sparkles, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import StreaksCalendar from "@/components/StreaksCalendar";
 import StreaksDashboard from "@/components/StreaksDashboard";

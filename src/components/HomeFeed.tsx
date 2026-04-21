@@ -113,7 +113,7 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="px-5 pb-2 flex items-center justify-between" style={{ paddingTop: "max(3.5rem, calc(env(safe-area-inset-top, 0px) + 0.75rem))" }}>
+      <div className="px-5 pt-safe pb-2 flex items-center justify-between">
         {/* Today / Community Toggle */}
         <div className="flex items-center gap-5">
           {(["today", "community"] as HomePane[]).map((p) => (

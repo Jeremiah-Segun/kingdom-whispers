@@ -83,7 +83,7 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="px-6 pb-6" style={{ paddingTop: "max(2rem, calc(env(safe-area-inset-top, 0px) + 0.75rem))" }}>
+      <div className="px-6 pt-safe pb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {avatarUrl ? (

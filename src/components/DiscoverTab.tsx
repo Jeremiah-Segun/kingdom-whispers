@@ -81,6 +81,10 @@ const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = 
     );
   }
 
+  if (activeLink === "Events") {
+    return <EventsHub onBack={() => setActiveLink(null)} />;
+  }
+
   if (activeLink === "Newsletter") {
     return <NewsletterList onBack={() => setActiveLink(null)} />;
   }

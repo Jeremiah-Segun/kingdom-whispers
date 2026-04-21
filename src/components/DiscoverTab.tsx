@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Search, Mic, Play, Mail, Handshake, ArrowLeft } from "lucide-react";
+import { Search, Mic, Play, Mail, Handshake, ArrowLeft, PenSquare } from "lucide-react";
 import { discoverCategories, verses } from "@/lib/verses";
 import NewsletterList from "@/components/NewsletterList";
+import NewsletterEditor from "@/components/NewsletterEditor";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const quickLinks = [
   { label: "Podcast", icon: Mic },
@@ -17,6 +19,7 @@ interface DiscoverTabProps {
 }
 
 const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = {}) => {
+  const { isAdmin } = useIsAdmin();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeLink, setActiveLink] = useState<string | null>(null);
@@ -78,6 +81,10 @@ const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = 
 
   if (activeLink === "Newsletter") {
     return <NewsletterList onBack={() => setActiveLink(null)} />;
+  }
+
+  if (activeLink === "NewsletterEditor") {
+    return <NewsletterEditor onBack={() => setActiveLink(null)} />;
   }
 
   if (activeLink) {

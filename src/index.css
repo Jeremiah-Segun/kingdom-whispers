@@ -213,4 +213,10 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  .pt-safe {
+    padding-top: max(3.5rem, calc(env(safe-area-inset-top, 0px) + 0.75rem));
+  }
+  .pb-safe {
+    padding-bottom: max(5rem, calc(env(safe-area-inset-bottom, 0px) + 4rem));
+  }
 }

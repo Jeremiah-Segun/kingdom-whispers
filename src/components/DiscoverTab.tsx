@@ -146,6 +146,15 @@ const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = 
             </button>
           );
         })}
+        {isAdmin && (
+          <button
+            onClick={() => setActiveLink("NewsletterEditor")}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/15 border border-primary/30 text-primary hover:bg-primary/25 transition-colors shrink-0"
+          >
+            <PenSquare className="w-4 h-4" />
+            <span className="text-xs font-body font-medium">Write</span>
+          </button>
+        )}
       </div>
 
       {/* Category grid */}

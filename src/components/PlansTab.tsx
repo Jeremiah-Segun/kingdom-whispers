@@ -24,7 +24,7 @@ const PlansTab = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="px-5 pt-14 pb-2">
+      <div className="px-5 pt-safe pb-2">
         <h1 className="font-heading text-2xl font-bold text-foreground">Plans</h1>
         <p className="text-xs text-muted-foreground font-body mt-1">Grow deeper in your faith journey</p>
       </div>

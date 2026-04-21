@@ -42,7 +42,7 @@ const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = 
   if (selectedCategory) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <div className="px-5 pt-14 pb-4">
+        <div className="px-5 pt-safe pb-4">
           <button
             onClick={() => setSelectedCategory(null)}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
@@ -90,7 +90,7 @@ const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = 
   if (activeLink) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <div className="px-5 pt-14 pb-4">
+        <div className="px-5 pt-safe pb-4">
           <button
             onClick={() => setActiveLink(null)}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
@@ -113,7 +113,7 @@ const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = 
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="px-5 pt-14 pb-2">
+      <div className="px-5 pt-safe pb-2">
         <h1 className="font-heading text-2xl font-bold text-foreground">Discover</h1>
       </div>
 

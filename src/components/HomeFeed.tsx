@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Flame, Heart, MessageCircle, Share2, Bell, BookOpen, HandHelping, Play, UserPlus } from "lucide-react";
 import { verses, devotionals } from "@/lib/verses";
 import type { Category } from "@/lib/verses";
@@ -10,6 +10,7 @@ import FriendSearchDrawer from "@/components/FriendSearchDrawer";
 import NewsletterCard from "@/components/NewsletterCard";
 import CommunityComposer from "@/components/CommunityComposer";
 import CommunityTimeline from "@/components/CommunityTimeline";
+import PullToRefresh from "@/components/PullToRefresh";
 
 interface HomeFeedProps {
   category: Category;
@@ -95,10 +96,24 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
     setLikeCount(likedVerse ? likeCount - 1 : likeCount + 1);
   };
 
+  const handleRefresh = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("reading_progress")
+      .select("book, chapter, last_verse, updated_at")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) setResume(data);
+    setFeedKey((k) => k + 1);
+  }, [user]);
+
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="px-5 pt-14 pb-2 flex items-center justify-between">
+      <div className="px-5 pt-safe pb-2 flex items-center justify-between">
         {/* Today / Community Toggle */}
         <div className="flex items-center gap-5">
           {(["today", "community"] as HomePane[]).map((p) => (
@@ -300,6 +315,7 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
         onChange={() => setFeedKey((k) => k + 1)}
       />
     </div>
+    </PullToRefresh>
   );
 };
 

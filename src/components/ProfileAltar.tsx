@@ -1,7 +1,12 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Flame, Award, Eye, Crown, Sun, Moon, Bookmark, HandHelping, Heart, LogOut, BookOpen, Sparkles } from "lucide-react";
+import { Flame, Award, Eye, Crown, Sun, Moon, Bookmark, HandHelping, Heart, LogOut, BookOpen, Sparkles, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import StreaksCalendar from "@/components/StreaksCalendar";
 import StreaksDashboard from "@/components/StreaksDashboard";
@@ -78,7 +83,7 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="px-6 pt-8 pb-6">
+      <div className="px-6 pt-safe pb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {avatarUrl ? (
@@ -188,7 +193,53 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
                 <span className="text-[10px] text-muted-foreground font-body shrink-0 ml-2">{item.time}</span>
               </motion.div>
             ))}
-          </div>
+         </div>
+        </div>
+
+        {/* Delete Account */}
+        <div className="mt-8">
+          <h3 className="font-body text-xs tracking-[0.15em] uppercase text-muted-foreground mb-3">Account</h3>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="w-full flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive/15 transition-colors">
+                <Trash2 className="w-4 h-4" />
+                <span className="text-sm font-body font-medium">Delete Account</span>
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-heading">Delete your account?</AlertDialogTitle>
+                <AlertDialogDescription className="font-body">
+                  This will permanently delete your account, all your data, bookmarks, prayers, and whispers. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="font-body">Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-body"
+                  onClick={async () => {
+                    if (!user) return;
+                    // Delete user data from tables
+                    await Promise.all([
+                      supabase.from("bookmarks").delete().eq("user_id", user.id),
+                      supabase.from("prayers").delete().eq("user_id", user.id),
+                      supabase.from("reading_days").delete().eq("user_id", user.id),
+                      supabase.from("reading_progress").delete().eq("user_id", user.id),
+                      supabase.from("user_badges").delete().eq("user_id", user.id),
+                      supabase.from("user_streaks").delete().eq("user_id", user.id),
+                      supabase.from("verse_comments").delete().eq("user_id", user.id),
+                      supabase.from("posts").delete().eq("user_id", user.id),
+                      supabase.from("profiles").delete().eq("user_id", user.id),
+                    ]);
+                    await supabase.auth.signOut();
+                    toast({ title: "Account deleted", description: "Your data has been removed." });
+                  }}
+                >
+                  Yes, delete everything
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

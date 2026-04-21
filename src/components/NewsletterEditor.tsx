@@ -86,7 +86,7 @@ const NewsletterEditor = ({ onBack }: { onBack: () => void }) => {
   if (isNew) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <div className="px-5 pt-14 pb-4">
+        <div className="px-5 pt-safe pb-4">
           <button onClick={() => setIsNew(false)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4">
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-body">Back</span>
@@ -135,7 +135,7 @@ const NewsletterEditor = ({ onBack }: { onBack: () => void }) => {
   // List view
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="px-5 pt-14 pb-4">
+      <div className="px-5 pt-safe pb-4">
         <button onClick={onBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm font-body">Back</span>

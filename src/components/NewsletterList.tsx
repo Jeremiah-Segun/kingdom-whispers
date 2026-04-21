@@ -38,7 +38,7 @@ const NewsletterList = ({ onBack }: { onBack: () => void }) => {
   if (active) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <div className="px-5 pt-14 pb-4">
+        <div className="px-5 pt-safe pb-4">
           <button
             onClick={() => setActive(null)}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
@@ -69,7 +69,7 @@ const NewsletterList = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="px-5 pt-14 pb-4">
+      <div className="px-5 pt-safe pb-4">
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"

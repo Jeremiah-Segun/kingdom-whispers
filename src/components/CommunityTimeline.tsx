@@ -115,14 +115,16 @@ const CommunityTimeline = ({ refreshKey = 0 }: { refreshKey?: number }) => {
     }
   };
 
-  // Increment view counts for visible posts
+  // Increment view counts for visible posts (fire-and-forget, no RPC needed)
   useEffect(() => {
-    if (!items.length) return;
-    const ids = items.map((p) => p.id);
-    // Fire-and-forget view count increment
-    ids.forEach((id) => {
-      supabase.rpc("increment_post_view", { _post_id: id }).then(() => {});
+    if (!items.length || !user) return;
+    // Only increment for posts not by current user
+    items.forEach((p) => {
+      if (p.user_id !== user.id) {
+        supabase.from("posts").update({ view_count: p.view_count + 1 }).eq("id", p.id).then(() => {});
+      }
     });
+    // eslint-disable-next-line
   }, [items.length]);
 
   const colorFor = useMemo(() => (uid: string) => colors[uid.charCodeAt(0) % colors.length], []);

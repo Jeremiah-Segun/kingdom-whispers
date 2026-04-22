@@ -113,29 +113,20 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
   return (
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
+      {/* Header - Pill Toggle */}
       <div className="px-5 pt-safe pb-2 flex items-center justify-between">
-        {/* Today / Community Toggle */}
-        <div className="flex items-center gap-5">
+        <div className="flex items-center bg-secondary rounded-full p-1">
           {(["today", "community"] as HomePane[]).map((p) => (
             <button
               key={p}
               onClick={() => setPane(p)}
-              className="relative pb-1.5"
+              className={`px-5 py-2 rounded-full text-sm font-heading font-semibold transition-all ${
+                pane === p
+                  ? "bg-gradient-to-r from-primary to-gold-glow text-primary-foreground shadow-sm"
+                  : "text-muted-foreground"
+              }`}
             >
-              <span
-                className={`font-heading text-lg font-semibold transition-colors ${
-                  pane === p ? "text-foreground" : "text-muted-foreground"
-                }`}
-              >
-                {p === "today" ? "Today" : "Community"}
-              </span>
-              {pane === p && (
-                <motion.div
-                  layoutId="home-tab-indicator"
-                  className="absolute bottom-0 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-primary to-gold-glow"
-                />
-              )}
+              {p === "today" ? "Today" : "Community"}
             </button>
           ))}
         </div>

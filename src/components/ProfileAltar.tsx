@@ -203,50 +203,66 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
          </div>
         </div>
 
-        {/* Delete Account */}
+        {/* My Posts Timeline */}
+        {user && (
+          <div>
+            <h3 className="font-body text-xs tracking-[0.15em] uppercase text-muted-foreground mb-3">My Posts</h3>
+            <UserPostsTimeline userId={user.id} displayName={displayName} avatarUrl={avatarUrl} />
+          </div>
+        )}
+
+        {/* Account */}
         <div className="mt-8">
           <h3 className="font-body text-xs tracking-[0.15em] uppercase text-muted-foreground mb-3">Account</h3>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button className="w-full flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive/15 transition-colors">
-                <Trash2 className="w-4 h-4" />
-                <span className="text-sm font-body font-medium">Delete Account</span>
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle className="font-heading">Delete your account?</AlertDialogTitle>
-                <AlertDialogDescription className="font-body">
-                  This will permanently delete your account, all your data, bookmarks, prayers, and whispers. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="font-body">Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-body"
-                  onClick={async () => {
-                    if (!user) return;
-                    // Delete user data from tables
-                    await Promise.all([
-                      supabase.from("bookmarks").delete().eq("user_id", user.id),
-                      supabase.from("prayers").delete().eq("user_id", user.id),
-                      supabase.from("reading_days").delete().eq("user_id", user.id),
-                      supabase.from("reading_progress").delete().eq("user_id", user.id),
-                      supabase.from("user_badges").delete().eq("user_id", user.id),
-                      supabase.from("user_streaks").delete().eq("user_id", user.id),
-                      supabase.from("verse_comments").delete().eq("user_id", user.id),
-                      supabase.from("posts").delete().eq("user_id", user.id),
-                      supabase.from("profiles").delete().eq("user_id", user.id),
-                    ]);
-                    await supabase.auth.signOut();
-                    toast({ title: "Account deleted", description: "Your data has been removed." });
-                  }}
-                >
-                  Yes, delete everything
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <div className="space-y-3">
+            <button
+              onClick={() => setAnalyticsOpen(true)}
+              className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-primary/20 transition-colors"
+            >
+              <BarChart3 className="w-4 h-4 text-primary" />
+              <span className="text-sm font-body font-medium text-foreground">Analytics</span>
+            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="w-full flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive/15 transition-colors">
+                  <Trash2 className="w-4 h-4" />
+                  <span className="text-sm font-body font-medium">Delete Account</span>
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-heading">Delete your account?</AlertDialogTitle>
+                  <AlertDialogDescription className="font-body">
+                    This will permanently delete your account, all your data, bookmarks, prayers, and whispers. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="font-body">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-body"
+                    onClick={async () => {
+                      if (!user) return;
+                      await Promise.all([
+                        supabase.from("bookmarks").delete().eq("user_id", user.id),
+                        supabase.from("prayers").delete().eq("user_id", user.id),
+                        supabase.from("reading_days").delete().eq("user_id", user.id),
+                        supabase.from("reading_progress").delete().eq("user_id", user.id),
+                        supabase.from("user_badges").delete().eq("user_id", user.id),
+                        supabase.from("user_streaks").delete().eq("user_id", user.id),
+                        supabase.from("verse_comments").delete().eq("user_id", user.id),
+                        supabase.from("posts").delete().eq("user_id", user.id),
+                        supabase.from("profiles").delete().eq("user_id", user.id),
+                      ]);
+                      await supabase.auth.signOut();
+                      toast({ title: "Account deleted", description: "Your data has been removed." });
+                    }}
+                  >
+                    Yes, delete everything
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </div>
 

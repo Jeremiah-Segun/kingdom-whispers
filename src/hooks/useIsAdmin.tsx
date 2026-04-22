@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-const ADMIN_EMAIL = "jaeyblaine@gmail.com";
-
 export const useIsAdmin = () => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -17,26 +15,14 @@ export const useIsAdmin = () => {
     }
 
     (async () => {
-      // Check if already has admin role
-      const { data: existing } = await supabase
+      const { data } = await supabase
         .from("user_roles")
         .select("id")
         .eq("user_id", user.id)
         .eq("role", "admin")
         .maybeSingle();
 
-      if (existing) {
-        setIsAdmin(true);
-        setLoading(false);
-        return;
-      }
-
-      // Auto-grant admin for the designated email
-      if (user.email === ADMIN_EMAIL) {
-        await supabase.from("user_roles").insert({ user_id: user.id, role: "admin" });
-        setIsAdmin(true);
-      }
-
+      setIsAdmin(!!data);
       setLoading(false);
     })();
   }, [user]);

@@ -104,6 +104,27 @@ const CommunityTimeline = ({ refreshKey = 0 }: { refreshKey?: number }) => {
     }
   };
 
+  const deletePost = async (id: string) => {
+    if (!user) return;
+    const { error } = await supabase.from("posts").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setItems((prev) => prev.filter((p) => p.id !== id));
+      toast({ title: "Post deleted" });
+    }
+  };
+
+  // Increment view counts for visible posts
+  useEffect(() => {
+    if (!items.length) return;
+    const ids = items.map((p) => p.id);
+    // Fire-and-forget view count increment
+    ids.forEach((id) => {
+      supabase.rpc("increment_post_view", { _post_id: id }).then(() => {});
+    });
+  }, [items.length]);
+
   const colorFor = useMemo(() => (uid: string) => colors[uid.charCodeAt(0) % colors.length], []);
 
   if (loading) {

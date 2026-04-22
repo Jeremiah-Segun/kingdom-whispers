@@ -195,6 +195,18 @@ const CommunityTimeline = ({ refreshKey = 0 }: { refreshKey?: number }) => {
                 <MessageCircle className="w-3.5 h-3.5" />
                 <span className="text-[11px] font-body">{p.comment_count}</span>
               </button>
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Eye className="w-3.5 h-3.5" />
+                <span className="text-[11px] font-body">{p.view_count}</span>
+              </div>
+              {user && user.id === p.user_id && (
+                <button
+                  onClick={() => deletePost(p.id)}
+                  className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors ml-auto"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
               {user && user.id !== p.user_id && (
                 <button
                   onClick={async () => {

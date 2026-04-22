@@ -339,6 +339,7 @@ export type Database = {
           like_count: number
           updated_at: string
           user_id: string
+          view_count: number
         }
         Insert: {
           body: string
@@ -348,6 +349,7 @@ export type Database = {
           like_count?: number
           updated_at?: string
           user_id: string
+          view_count?: number
         }
         Update: {
           body?: string
@@ -357,6 +359,7 @@ export type Database = {
           like_count?: number
           updated_at?: string
           user_id?: string
+          view_count?: number
         }
         Relationships: []
       }

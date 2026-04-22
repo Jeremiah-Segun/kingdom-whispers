@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Search, Mic, Play, Mail, Handshake, ArrowLeft, PenSquare, CalendarDays } from "lucide-react";
+import { Search, Mic, Play, Mail, BookOpen, ArrowLeft, PenSquare, CalendarDays } from "lucide-react";
 import { discoverCategories, verses } from "@/lib/verses";
 import NewsletterList from "@/components/NewsletterList";
 import NewsletterEditor from "@/components/NewsletterEditor";
 import EventsHub from "@/components/EventsHub";
+import BooksLibrary from "@/components/BooksLibrary";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const quickLinks = [
@@ -12,7 +13,7 @@ const quickLinks = [
   { label: "Podcast", icon: Mic },
   { label: "Videos", icon: Play },
   { label: "Newsletter", icon: Mail },
-  { label: "Partners", icon: Handshake },
+  { label: "Books", icon: BookOpen },
 ];
 
 interface DiscoverTabProps {
@@ -91,6 +92,10 @@ const DiscoverTab = ({ initialLink, onConsumedInitialLink }: DiscoverTabProps = 
 
   if (activeLink === "NewsletterEditor") {
     return <NewsletterEditor onBack={() => setActiveLink(null)} />;
+  }
+
+  if (activeLink === "Books") {
+    return <BooksLibrary onBack={() => setActiveLink(null)} />;
   }
 
   if (activeLink) {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Loader2, Flag } from "lucide-react";
+import { Heart, MessageCircle, Loader2, Flag, Eye, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PostCommentsDrawer from "@/components/PostCommentsDrawer";
@@ -12,6 +12,7 @@ interface PostRow {
   body: string;
   like_count: number;
   comment_count: number;
+  view_count: number;
   created_at: string;
   author_name: string | null;
   author_avatar: string | null;
@@ -39,7 +40,7 @@ const CommunityTimeline = ({ refreshKey = 0 }: { refreshKey?: number }) => {
     setLoading(true);
     const { data: posts } = await supabase
       .from("posts")
-      .select("id, user_id, body, like_count, comment_count, created_at")
+      .select("id, user_id, body, like_count, comment_count, view_count, created_at")
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -102,6 +103,29 @@ const CommunityTimeline = ({ refreshKey = 0 }: { refreshKey?: number }) => {
       await supabase.from("post_likes").insert({ user_id: user.id, post_id: id });
     }
   };
+
+  const deletePost = async (id: string) => {
+    if (!user) return;
+    const { error } = await supabase.from("posts").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setItems((prev) => prev.filter((p) => p.id !== id));
+      toast({ title: "Post deleted" });
+    }
+  };
+
+  // Increment view counts for visible posts (fire-and-forget, no RPC needed)
+  useEffect(() => {
+    if (!items.length || !user) return;
+    // Only increment for posts not by current user
+    items.forEach((p) => {
+      if (p.user_id !== user.id) {
+        supabase.from("posts").update({ view_count: p.view_count + 1 }).eq("id", p.id).then(() => {});
+      }
+    });
+    // eslint-disable-next-line
+  }, [items.length]);
 
   const colorFor = useMemo(() => (uid: string) => colors[uid.charCodeAt(0) % colors.length], []);
 
@@ -171,6 +195,18 @@ const CommunityTimeline = ({ refreshKey = 0 }: { refreshKey?: number }) => {
                 <MessageCircle className="w-3.5 h-3.5" />
                 <span className="text-[11px] font-body">{p.comment_count}</span>
               </button>
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Eye className="w-3.5 h-3.5" />
+                <span className="text-[11px] font-body">{p.view_count}</span>
+              </div>
+              {user && user.id === p.user_id && (
+                <button
+                  onClick={() => deletePost(p.id)}
+                  className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors ml-auto"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
               {user && user.id !== p.user_id && (
                 <button
                   onClick={async () => {

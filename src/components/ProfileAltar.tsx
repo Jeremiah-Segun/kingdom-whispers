@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Flame, Award, Eye, Crown, Sun, Moon, Bookmark, HandHelping, Heart, LogOut, BookOpen, Sparkles, Trash2 } from "lucide-react";
+import { Flame, Award, Eye, Crown, Sun, Moon, Bookmark, HandHelping, Heart, LogOut, BookOpen, Sparkles, Trash2, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -13,6 +13,8 @@ import StreaksDashboard from "@/components/StreaksDashboard";
 import PrayerJournal from "@/components/PrayerJournal";
 import SavedBookmarksDrawer from "@/components/SavedBookmarksDrawer";
 import WhispersLibrary from "@/components/WhispersLibrary";
+import UserPostsTimeline from "@/components/UserPostsTimeline";
+import AnalyticsPage from "@/pages/Analytics";
 import { BADGE_CATALOG } from "@/lib/badges";
 
 interface ProfileAltarProps {
@@ -47,6 +49,7 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
   const [whispersOpen, setWhispersOpen] = useState(false);
   const [streaksOpen, setStreaksOpen] = useState(false);
   const [earnedKeys, setEarnedKeys] = useState<Set<string>>(new Set());
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [prayerCount, setPrayerCount] = useState(0);
   const [whisperCount, setWhisperCount] = useState(0);
   const [localBookmarkCount, setLocalBookmarkCount] = useState(bookmarkCount);

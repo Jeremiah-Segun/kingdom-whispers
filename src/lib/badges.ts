@@ -13,17 +13,10 @@ const CATALOG: Record<string, BadgeInfo> = {
 export const BADGE_CATALOG = CATALOG;
 export type BadgeKey = keyof typeof CATALOG;
 
-/** Award a badge if not already earned. Returns BadgeInfo if newly awarded, else null. */
-export async function awardBadge(userId: string, key: BadgeKey): Promise<BadgeInfo | null> {
-  const { data: existing } = await supabase
-    .from("user_badges")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("badge_key", key)
-    .maybeSingle();
-  if (existing) return null;
-  const { error } = await supabase.from("user_badges").insert({ user_id: userId, badge_key: key });
-  if (error) return null;
+/** Award a badge via server-side RPC. Returns BadgeInfo if newly awarded, else null. */
+export async function awardBadge(_userId: string, key: BadgeKey): Promise<BadgeInfo | null> {
+  const { data, error } = await supabase.rpc("award_badge", { _badge_key: key as string });
+  if (error || !data) return null;
   return CATALOG[key];
 }
 

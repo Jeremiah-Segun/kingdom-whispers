@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Loader2, Flag } from "lucide-react";
+import { Heart, MessageCircle, Loader2, Flag, Eye, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PostCommentsDrawer from "@/components/PostCommentsDrawer";
@@ -12,6 +12,7 @@ interface PostRow {
   body: string;
   like_count: number;
   comment_count: number;
+  view_count: number;
   created_at: string;
   author_name: string | null;
   author_avatar: string | null;
@@ -39,7 +40,7 @@ const CommunityTimeline = ({ refreshKey = 0 }: { refreshKey?: number }) => {
     setLoading(true);
     const { data: posts } = await supabase
       .from("posts")
-      .select("id, user_id, body, like_count, comment_count, created_at")
+      .select("id, user_id, body, like_count, comment_count, view_count, created_at")
       .order("created_at", { ascending: false })
       .limit(50);
 

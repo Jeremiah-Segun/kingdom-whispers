@@ -151,9 +151,9 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
             transition={{ duration: 0.25 }}
             className="px-5 space-y-5 mt-2"
           >
-            {/* Greeting */}
+            {/* Greeting with name */}
             <div>
-              <p className="text-muted-foreground text-xs font-body">Good Afternoon</p>
+              <p className="text-muted-foreground text-xs font-body">Good Afternoon,</p>
               <h1 className="font-heading text-xl font-semibold text-foreground">{displayName}</h1>
             </div>
 
@@ -281,25 +281,52 @@ const HomeFeed = ({ category, streak, onNavigate, displayName = "Whisperer" }: H
             transition={{ duration: 0.25 }}
             className="px-5 space-y-5 mt-4"
           >
-            <CommunityComposer displayName={displayName} onPosted={() => setFeedKey((k) => k + 1)} />
-
-            <div>
-              <h2 className="font-heading text-sm font-semibold text-foreground mb-3">Timeline</h2>
-              <CommunityTimeline refreshKey={feedKey} />
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <h2 className="font-heading text-sm font-semibold text-foreground">Friends' Highlights</h2>
+            {/* Friend Circles */}
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-1">
+              {friends.map((f) => (
+                <div key={f.name} className="flex flex-col items-center gap-1 shrink-0">
+                  <div className={`w-14 h-14 rounded-full border-2 border-primary/40 flex items-center justify-center ${f.color}`}>
+                    <span className="text-sm font-heading font-bold text-white">{f.avatar}</span>
+                  </div>
+                  <span className="text-[10px] font-body text-muted-foreground">{f.name}</span>
+                </div>
+              ))}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground text-[11px] font-body font-medium hover:bg-primary/10 transition-colors"
+                className="flex flex-col items-center gap-1 shrink-0"
               >
-                <UserPlus className="w-3.5 h-3.5" />
-                Find friends
+                <div className="w-14 h-14 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center bg-secondary">
+                  <UserPlus className="w-5 h-5 text-primary/60" />
+                </div>
+                <span className="text-[10px] font-body text-muted-foreground">New</span>
               </button>
             </div>
 
-            <CommunityFeedLive key={feedKey} onOpenSearch={() => setSearchOpen(true)} />
+            {/* Composer */}
+            <CommunityComposer displayName={displayName} onPosted={() => setFeedKey((k) => k + 1)} />
+
+            {/* Timeline */}
+            <CommunityTimeline refreshKey={feedKey} />
+
+            {/* Find Friends CTA */}
+            <div className="rounded-xl bg-secondary/60 border border-border p-5 text-center">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <UserPlus className="w-5 h-5 text-primary" />
+              </div>
+              <p className="text-sm font-body text-foreground mb-1">Connect with friends to see their highlights and share your journey.</p>
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="mt-3 inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-primary text-primary-foreground text-xs font-body font-medium"
+              >
+                Find Friends
+              </button>
+            </div>
+
+            {/* Friends' Highlights */}
+            <div>
+              <h2 className="font-heading text-sm font-semibold text-foreground mb-3">Friends' Highlights</h2>
+              <CommunityFeedLive key={feedKey} onOpenSearch={() => setSearchOpen(true)} />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

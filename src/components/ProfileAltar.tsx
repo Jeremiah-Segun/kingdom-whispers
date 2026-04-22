@@ -84,6 +84,10 @@ const ProfileAltar = ({ streak, onToggleTheme, isDark, displayName = "Whisperer"
   ];
   const filteredActivities = activityFilter === "All" ? activityItems : activityItems.filter((a) => a.type === activityFilter);
 
+  if (analyticsOpen) {
+    return <AnalyticsPage onBack={() => setAnalyticsOpen(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="px-6 pt-safe pb-6">
